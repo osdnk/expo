@@ -56,6 +56,10 @@ typedef void(^EXRemoteNotificationAPNSTokenHandler)(NSData * _Nullable apnsToken
     // don't register, because the detached app may not be built with APNS entitlements,
     // and in that case this method would actually be bad to call. (not just a no-op.)
     DDLogWarn(@"Expo Remote Notification services won't work in an ExpoKit app because Expo cannot manage your APNS certificates.");
+    
+    // registering for remote notifications triggers [self registerAPNSToken] and fires memorized promises resolution
+    // but we prevent that by not registering for notifications, so we need resolve these promises with error manually
+    [self cleanRegisteredAPNSTokenHandlers];
   } else {
     dispatch_async(dispatch_get_main_queue(), ^{
       [RCTSharedApplication() registerForRemoteNotifications];
@@ -63,11 +67,27 @@ typedef void(^EXRemoteNotificationAPNSTokenHandler)(NSData * _Nullable apnsToken
   }
 }
 
+- (void)cleanRegisteredAPNSTokenHandlers
+{
+  dispatch_assert_queue(_queue);
+  
+  NSArray<EXRemoteNotificationAPNSTokenHandler> *apnsTokenHandlers = [_apnsTokenHandlers copy];
+  [_apnsTokenHandlers removeAllObjects];
+  [apnsTokenHandlers enumerateObjectsUsingBlock:^(EXRemoteNotificationAPNSTokenHandler handler,
+                                                  NSUInteger idx,
+                                                  BOOL *stop) {
+    NSError *error = [NSError errorWithDomain:kEXRemoteNotificationErrorDomain
+                                         code:EXRemoteNotificationErrorCodeAPNSRegistrationFailed
+                                     userInfo:@{
+                                                NSLocalizedDescriptionKey: @"The device was unable to register for remote notifications with Apple, becasue Expo cannot manage your APNS certificates"
+                                                }];
+    handler(nil, error);
+  }];
+}
+
 - (void)registerAPNSToken:(nullable NSData *)token registrationError:(nullable NSError *)error
 {
-
   dispatch_assert_queue(_queue);
-
 
   BOOL tokenDidChange = (token != _currentAPNSToken) && ![token isEqualToData:_currentAPNSToken];
   if (tokenDidChange) {
