@@ -16,8 +16,8 @@ type OpenBrowserParams = {
 type AuthSessionResult = RedirectResult | BrowserResult;
 
 type CustomTabsBrowsersResults = {
-  default: String[];
-  packages: String[];
+  default: string[];
+  packages: string[];
 };
 
 type BrowserResult = {

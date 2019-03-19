@@ -2,14 +2,6 @@ import { EventEmitter, Platform } from '@unimodules/core';
 import invariant from 'invariant';
 import ExpoLocation from './ExpoLocation';
 const LocationEventEmitter = new EventEmitter(ExpoLocation);
-;
-;
-;
-;
-;
-;
-;
-;
 var LocationAccuracy;
 (function (LocationAccuracy) {
     LocationAccuracy[LocationAccuracy["Lowest"] = 1] = "Lowest";

@@ -6,8 +6,8 @@ declare type OpenBrowserParams = {
 };
 declare type AuthSessionResult = RedirectResult | BrowserResult;
 declare type CustomTabsBrowsersResults = {
-    default: String[];
-    packages: String[];
+    default: string[];
+    packages: string[];
 };
 declare type BrowserResult = {
     type: 'cancel' | 'dismiss';
